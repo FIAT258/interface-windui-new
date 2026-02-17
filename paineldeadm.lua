@@ -2,179 +2,161 @@ debugX = true
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
+-- Configuração da janela principal (mantida igual)
 local Window = Rayfield:CreateWindow({
-   Name = "Rayfield Example Window",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "Rayfield Interface Suite",
-   LoadingSubtitle = "by Sirius",
-   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
-
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
-
+   Name = "Admin Panel",
+   LoadingTitle = "Carregando Interface",
+   LoadingSubtitle = "Por Sirius",
    ConfigurationSaving = {
       Enabled = true,
-      FolderName = nil, -- Create a custom folder for your hub/game
-      FileName = "Big Hub"
+      FileName = "AdminPanelConfig"
    },
-
    Discord = {
-      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+      Enabled = false,
+      Invite = "noinvitelink"
    },
-
-   KeySystem = false, -- Set this to true to use our key system
-   KeySettings = {
-      Title = "Untitled",
-      Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
-      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
-   }
+   KeySystem = false
 })
 
--- Função para enviar mensagens no chat
-local function SendChatMessage(Message)
-   game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Message, "All")
+-- Função melhorada para enviar mensagens no chat
+local function SendChatMessage(msg)
+   if game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents") then
+      game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+   else
+      -- Método alternativo caso o primeiro não funcione
+      game:GetService("TextChatService").TextChannels.RBXGeneral:SendAsync(msg)
+   end
 end
 
 -- Tab "Admin"
-local AdminTab = Window:CreateTab("Admin", 7120897394) -- Título e ID da imagem
+local AdminTab = Window:CreateTab("Admin", 7120897394)
 
--- Dropdown de Players (atualiza automaticamente)
+-- Sistema de dropdown de jogadores melhorado
 local PlayersDropdown
-local function UpdatePlayersDropdown()
-   local Players = game:GetService("Players"):GetPlayers()
-   local PlayerNames = {}
-   for _, Player in ipairs(Players) do
-      table.insert(PlayerNames, Player.Name)
+local function GetPlayerNames()
+   local players = {}
+   for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+      if player ~= game:GetService("Players").LocalPlayer then
+         table.insert(players, player.Name)
+      end
    end
-   PlayersDropdown:Set(PlayerNames)
+   return players
+end
+
+local function UpdatePlayerList()
+   local playerNames = GetPlayerNames()
+   PlayersDropdown:Set(playerNames)
+   if #playerNames == 0 then
+      PlayersDropdown:Set({"Nenhum jogador encontrado"})
+   end
 end
 
 PlayersDropdown = AdminTab:CreateDropdown({
    Name = "Selecione um Jogador",
-   Options = {},
+   Options = GetPlayerNames(),
    CurrentOption = "",
-   Flag = "PlayerDropdown",
-   Callback = function(Option)
-      -- Nada aqui, apenas seleção
-   end,
+   Flag = "PlayerList",
+   Callback = function(Option) end
 })
 
--- Atualiza o dropdown quando um jogador entra/sai
-game:GetService("Players").PlayerAdded:Connect(function()
-   UpdatePlayersDropdown()
+-- Atualiza a lista quando jogadores entram/saem
+game:GetService("Players").PlayerAdded:Connect(function(player)
+   UpdatePlayerList()
    Rayfield:Notify({
       Title = "Jogador Entrou",
-      Content = "Um jogador entrou no servidor.",
+      Content = player.Name .. " entrou no jogo.",
       Duration = 3,
-      Image = 7120897394,
+      Image = 7120897394
    })
 end)
 
-game:GetService("Players").PlayerRemoving:Connect(function(Player)
-   UpdatePlayersDropdown()
+game:GetService("Players").PlayerRemoving:Connect(function(player)
+   UpdatePlayerList()
    Rayfield:Notify({
       Title = "Jogador Saiu",
-      Content = Player.Name .. " saiu do servidor.",
+      Content = player.Name .. " saiu do jogo.",
       Duration = 3,
-      Image = 7120897394,
+      Image = 7120897394
    })
 end)
 
--- Botão Freeze Player
+-- Botões de comandos com verificação melhorada
 AdminTab:CreateButton({
    Name = "Freeze Player",
    Callback = function()
-      local SelectedPlayer = PlayersDropdown.CurrentOption
-      if SelectedPlayer ~= "" then
-         SendChatMessage("frezeexfirexpainel2.0 " .. SelectedPlayer)
+      if PlayersDropdown.CurrentOption ~= "" and PlayersDropdown.CurrentOption ~= "Nenhum jogador encontrado" then
+         SendChatMessage("frezeexfirexpainel2.0 " .. PlayersDropdown.CurrentOption)
       end
-   end,
+   end
 })
 
--- Botão Kick Player
 AdminTab:CreateButton({
    Name = "Kick Player",
    Callback = function()
-      local SelectedPlayer = PlayersDropdown.CurrentOption
-      if SelectedPlayer ~= "" then
-         SendChatMessage("xfirexkick " .. SelectedPlayer)
+      if PlayersDropdown.CurrentOption ~= "" and PlayersDropdown.CurrentOption ~= "Nenhum jogador encontrado" then
+         SendChatMessage("xfirexkick " .. PlayersDropdown.CurrentOption)
       end
-   end,
+   end
 })
 
--- Botão Crash Player
 AdminTab:CreateButton({
    Name = "Crash Player",
    Callback = function()
-      local SelectedPlayer = PlayersDropdown.CurrentOption
-      if SelectedPlayer ~= "" then
-         SendChatMessage("crashxfirex " .. SelectedPlayer)
+      if PlayersDropdown.CurrentOption ~= "" and PlayersDropdown.CurrentOption ~= "Nenhum jogador encontrado" then
+         SendChatMessage("crashxfirex " .. PlayersDropdown.CurrentOption)
       end
-   end,
+   end
 })
 
--- Botão Jail Player
 AdminTab:CreateButton({
    Name = "Jail Player",
    Callback = function()
-      local SelectedPlayer = PlayersDropdown.CurrentOption
-      if SelectedPlayer ~= "" then
-         SendChatMessage("jailxfirex " .. SelectedPlayer)
+      if PlayersDropdown.CurrentOption ~= "" and PlayersDropdown.CurrentOption ~= "Nenhum jogador encontrado" then
+         SendChatMessage("jailxfirex " .. PlayersDropdown.CurrentOption)
       end
-   end,
+   end
 })
 
--- Aviso de que só funciona com o script grátis
-AdminTab:CreateLabel("⚠️ Essas coisas só funcionam para quem está usando o script grátis!")
-
--- Toggle para seguir o jogador
-local FollowingPlayer = false
-local CurrentFollowTarget = nil
+-- Sistema de visualização do jogador
 local Camera = workspace.CurrentCamera
+local ViewingPlayer = false
+local ViewConnection
 
 AdminTab:CreateToggle({
    Name = "View Player",
    CurrentValue = false,
-   Flag = "ViewPlayerToggle",
    Callback = function(Value)
-      FollowingPlayer = Value
+      ViewingPlayer = Value
       if Value then
-         local SelectedPlayer = PlayersDropdown.CurrentOption
-         if SelectedPlayer ~= "" then
-            local Player = game:GetService("Players"):FindFirstChild(SelectedPlayer)
-            if Player and Player.Character then
-               CurrentFollowTarget = Player.Character
-               coroutine.wrap(function()
-                  while FollowingPlayer and CurrentFollowTarget and CurrentFollowTarget:FindFirstChild("HumanoidRootPart") do
-                     Camera.CameraType = Enum.CameraType.Scriptable
-                     Camera.CFrame = CFrame.new(
-                        CurrentFollowTarget.HumanoidRootPart.Position + Vector3.new(0, 5, -10),
-                        CurrentFollowTarget.HumanoidRootPart.Position
-                     )
-                     wait()
+         local targetPlayer = game:GetService("Players"):FindFirstChild(PlayersDropdown.CurrentOption)
+         if targetPlayer and targetPlayer.Character then
+            local humanoidRootPart = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if humanoidRootPart then
+               Camera.CameraType = Enum.CameraType.Scriptable
+               ViewConnection = game:GetService("RunService").RenderStepped:Connect(function()
+                  if ViewingPlayer and humanoidRootPart then
+                     Camera.CFrame = CFrame.new(humanoidRootPart.Position + Vector3.new(0, 5, -10), humanoidRootPart.Position)
                   end
-                  Camera.CameraType = Enum.CameraType.Custom
-               end)()
+               end)
             end
          end
       else
-         CurrentFollowTarget = nil
+         if ViewConnection then
+            ViewConnection:Disconnect()
+         end
          Camera.CameraType = Enum.CameraType.Custom
       end
-   end,
+   end
 })
 
+-- Aviso
+AdminTab:CreateLabel("⚠️ Esses comandos só funcionam com o script completo!")
+
 -- Tab "FE ADMIN"
-local FEAdminTab = Window:CreateTab("FE ADMIN", 123890908152523) -- Título e ID da imagem
+local FEAdminTab = Window:CreateTab("FE ADMIN", 123890908152523)
 FEAdminTab:CreateLabel("EM BREVE :D")
 
--- Inicializa o dropdown
-UpdatePlayersDropdown()
+-- Atualiza a lista de jogadores imediatamente
+UpdatePlayerList()
 
 Rayfield:LoadConfiguration()
