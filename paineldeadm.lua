@@ -3,11 +3,11 @@ debugX = true
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-   Name = "XFIREX HUB (PAINEL DE ADM) BY FIAT",
-   Icon = 7120897394, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "carregando O PAINEL :3",
-   LoadingSubtitle = "by fiat",
-   Theme = "Ocean", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+   Name = "Rayfield Example Window",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "Rayfield Interface Suite",
+   LoadingSubtitle = "by Sirius",
+   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
    DisableRayfieldPrompts = false,
    DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
@@ -35,6 +35,11 @@ local Window = Rayfield:CreateWindow({
       Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
    }
 })
+
+-- Função para enviar mensagens no chat
+local function SendChatMessage(Message)
+   game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(Message, "All")
+end
 
 -- Tab "Admin"
 local AdminTab = Window:CreateTab("Admin", 7120897394) -- Título e ID da imagem
@@ -87,10 +92,7 @@ AdminTab:CreateButton({
    Callback = function()
       local SelectedPlayer = PlayersDropdown.CurrentOption
       if SelectedPlayer ~= "" then
-         game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-            "frezeexfirexpainel2.0 " .. SelectedPlayer,
-            "All"
-         )
+         SendChatMessage("frezeexfirexpainel2.0 " .. SelectedPlayer)
       end
    end,
 })
@@ -101,10 +103,7 @@ AdminTab:CreateButton({
    Callback = function()
       local SelectedPlayer = PlayersDropdown.CurrentOption
       if SelectedPlayer ~= "" then
-         game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-            "xfirexkick " .. SelectedPlayer,
-            "All"
-         )
+         SendChatMessage("xfirexkick " .. SelectedPlayer)
       end
    end,
 })
@@ -115,10 +114,7 @@ AdminTab:CreateButton({
    Callback = function()
       local SelectedPlayer = PlayersDropdown.CurrentOption
       if SelectedPlayer ~= "" then
-         game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-            "crashxfirex " .. SelectedPlayer,
-            "All"
-         )
+         SendChatMessage("crashxfirex " .. SelectedPlayer)
       end
    end,
 })
@@ -129,10 +125,7 @@ AdminTab:CreateButton({
    Callback = function()
       local SelectedPlayer = PlayersDropdown.CurrentOption
       if SelectedPlayer ~= "" then
-         game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer(
-            "jailxfirex " .. SelectedPlayer,
-            "All"
-         )
+         SendChatMessage("jailxfirex " .. SelectedPlayer)
       end
    end,
 })
